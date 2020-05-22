@@ -21,7 +21,7 @@ def read_data():
     """Read data and set the columns with SQL context"""
     sql_c = SQLContext(sc)
     data = sql_c.read.csv("/user/datasets/ecbdl14/ECBDL14_IR2.data", header=False, inferSchema=True)
-    print(len(sql_c))
+    print(len(list_columns))
     print(len(data.columns))
     for c in range(0, len(data.columns)):
         data = data.withColumnRenamed(data.columns[c], list_columns[c])
