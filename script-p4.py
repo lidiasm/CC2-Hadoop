@@ -2,13 +2,13 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 
 """Create Spark context with Spark configuration."""
-conf = SparkConf().setAppName("Práctica 4. Lidia Sánchez.")
+conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
 sc = SparkContext(conf=conf)
 
 """Create a Spark session to create a new dataframe"""
 ss = SparkSession \
     .builder \
-    .appName("Práctica 4. Lidia Sánchez.") \
+    .appName("Practica 4. Lidia Sanchez Merida.") \
     .getOrCreate()
 
 def read_data():
