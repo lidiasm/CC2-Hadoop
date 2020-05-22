@@ -33,8 +33,9 @@ def create_new_df(df, columns):
 
 if __name__ == "__main__":
     data = read_data()
-    selected_columns = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I",
-        "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M", "class"]
-    create_new_df(data, selected_columns)
+    data.show()
+    #selected_columns = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I",
+    #    "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M", "class"]
+    #create_new_df(data, selected_columns)
     sc.stop()
 
