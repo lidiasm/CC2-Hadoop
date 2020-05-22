@@ -40,7 +40,7 @@ def read_data():
 
 if __name__ == "__main__":
     data = read_data()
-    data.write.csv('./test', header=False, mode="overwrite")
+    data.write.csv('./filteredC.small.training', header=False, mode="overwrite")
     
     #data.show()
     #selected_columns = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I",
