@@ -1,15 +1,15 @@
 from pyspark import SparkContext, SparkConf
-from pyspark.sql import SQLContext
+from pyspark.sql import SparkSession #SQLContext
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
 sc = SparkContext(conf=conf)
 
 """Create a Spark session to create a new dataframe"""
-#ss = SparkSession \
-#    .builder \
-#    .appName("Practica 4. Lidia Sanchez Merida.") \
-#    .getOrCreate()
+ss = SparkSession \
+    .builder \
+    .appName("Practica 4. Lidia Sanchez Merida.") \
+    .getOrCreate()
 
 def read_data():
     """Read the header file"""
@@ -19,21 +19,21 @@ def read_data():
     """Get each column as a list element and delete '@inputs' and the first blank space"""
     list_columns = columns[0].replace('@inputs', '').replace(' ','').split(',')
     """Read data and set the columns with SQL context"""
-    sql_c = SQLContext(sc)
-    data = sql_c.read.csv("/user/datasets/ecbdl14/ECBDL14_IR2.data", header=False, inferSchema=True)
-    print(len(list_columns))
-    print(len(data.columns))
-    for c in range(0, len(data.columns)):
-        data = data.withColumnRenamed(data.columns[c], list_columns[c])
-    
-    return data
-
-#    """Read data and set the columns"""
-#    data = ss.read.csv("/user/datasets/ecbdl14/ECBDL14_IR2.data", header=False, inferSchema=True)
+#    sql_c = SQLContext(sc)
+#    data = sql_c.read.csv("/user/datasets/ecbdl14/ECBDL14_IR2.data", header=False, inferSchema=True)
+#    print(len(list_columns))
+#    print(len(data.columns))
 #    for c in range(0, len(data.columns)):
 #        data = data.withColumnRenamed(data.columns[c], list_columns[c])
-#
-#    return (data)
+#    
+#    return data
+
+    """Read data and set the columns"""
+    data = ss.read.csv("/user/datasets/ecbdl14/ECBDL14_IR2.data", header=False, inferSchema=True)
+    for c in range(0, len(data.columns)):
+        data = data.withColumnRenamed(data.columns[c], list_columns[c])
+
+    return (data)
 
 def create_new_df(df, columns):
     """Creates a new dataframe with the specified columns"""
