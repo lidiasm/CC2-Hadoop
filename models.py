@@ -5,6 +5,8 @@ from pyspark.ml.feature import VectorAssembler, StringIndexer
 from pyspark.ml import Pipeline
 from pyspark.ml.classification import LogisticRegression
 from pyspark.sql.types import StringType, StructType, StructField
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -43,24 +45,37 @@ def preprocess_df(df, selected_columns, label_column):
 def binomial_logistic_regression(train, test, iters):
     """Binomial Logistic Regression"""
     lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=iters)
+    """Cross validation to get the best value of regParam and elasticNetParam"""
+    grid = ParamGridBuilder().addGrid(lr.maxIter, [10, 100, 1000, 10000, 100000, 1000000])\
+            .addGrid(lr.regParam, [0.1, 0.01, 0.001, 0.0001])\
+            .addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0]).build()
+    evaluator = BinaryClassificationEvaluator()
+    cv = CrossValidator(estimator=lr, estimatorParamMaps=grid, evaluator=evaluator)
+    cv_model = cv.fit(train)
+    best_model = cv_model.bestModel
+    """Train with the best values"""
+    best_iters = best_model._java_obj.getMaxIter()
+    best_reg = best_model._java_obj.getRegParam()
+    best_elastic = best_model._java_obj.getElasticNetParam()
+    # TRAIN    
+    lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', 
+        maxIter=best_iters, regParam=best_reg, elasticNetParam=best_elastic)
     lrModel = lr.fit(train)
+    
     """Summary of the model"""
     trainingSummary = lrModel.summary
     predictions = lrModel.transform(test)
     """ROC"""
-    roc = round(trainingSummary.areaUnderROC*100, 2)
-    
+    roc = round(trainingSummary.areaUnderROC*100, 3)
     """Confusion matrix"""
     tp = predictions[(predictions.label == 1) & (predictions.prediction == 1)].count()
     tn = predictions[(predictions.label == 0) & (predictions.prediction == 0)].count()
     fp = predictions[(predictions.label == 0) & (predictions.prediction == 1)].count()
     fn = predictions[(predictions.label == 1) & (predictions.prediction == 0)].count()
     total = tp+tn+fp+fn
-    
     """Accuracy"""
     accuracy = float(tp+tn)/float(tp+tn+fp+fn)
     accuracy = round(accuracy*100,3)
-
     """Kappa"""
     # Probability observed
     po = float(tp+tn)/total
