@@ -4,6 +4,7 @@ import os.path
 from pyspark.ml.feature import VectorAssembler, StringIndexer
 from pyspark.ml import Pipeline
 from pyspark.ml.classification import LogisticRegression
+from pyspark.sql.types import StringType, StructType, StructField
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -40,7 +41,6 @@ def preprocess_df(df, selected_columns, label_column):
     return preprocessed_df
 
 def binomial_logistic_regression(train, test, iters):
-    train.printSchema()
     """Binomial Logistic Regression"""
     lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=iters)
     lrModel = lr.fit(train)
@@ -48,33 +48,41 @@ def binomial_logistic_regression(train, test, iters):
     trainingSummary = lrModel.summary
     predictions = lrModel.transform(test)
     """ROC"""
-    print('Area under ROC:', round(trainingSummary.areaUnderROC*100, 3), '%')
-
+    roc = round(trainingSummary.areaUnderROC*100, 2)
+    
     """Confusion matrix"""
-    # True Positives
     tp = predictions[(predictions.label == 1) & (predictions.prediction == 1)].count()
-    # True Negatives
     tn = predictions[(predictions.label == 0) & (predictions.prediction == 0)].count()
-    # False Positives
     fp = predictions[(predictions.label == 0) & (predictions.prediction == 1)].count()
-    # False Negatives
     fn = predictions[(predictions.label == 1) & (predictions.prediction == 0)].count()
     total = tp+tn+fp+fn
-    print('Confusion matrix')
-    print([[tn,fn], [fp, tp]])
     
     """Accuracy"""
     accuracy = float(tp+tn)/float(tp+tn+fp+fn)
-    print('Accuracy:',(round(accuracy*100,3)),'%')
+    accuracy = round(accuracy*100,3)
 
     """Kappa"""
     # Probability observed
     po = float(tp+tn)/total
     # Probability expected
     pe = float(((tn+fp)*(tn+fn))+((fn+tp)*(fp+tp)))/(total*total)
-    # Cohen's kappa Coefficient
     kappa = (float(po-pe)/(1-pe))
-    print('Kappa Coefficient: ',(round(kappa*100,3)),'%')
+    kappa = round(kappa*100,3)
+
+    """Store the results as a dataframe in a csv file"""
+    results = [(str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
+    schema = StructType([
+        StructField('ROC', StringType(), False),
+        StructField('Accuracy', StringType(), False),
+        StructField('Kappa', StringType(), False),
+        StructField('TN', StringType(), False),
+        StructField('FN', StringType(), False),
+        StructField('FP', StringType(), False),
+        StructField('TP', StringType(), False),
+    ])
+    results_df = ss.createDataFrame(results, schema)
+    results_df.show()
+    results_df.write.csv('./binomial.log.regress', header=True, mode="overwrite")
 
 if __name__ == "__main__":
   my_df = is_df("./filtered.small.training")
