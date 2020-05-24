@@ -70,9 +70,8 @@ def binomial_logistic_regression(train, test, iters):
     kappa = round(kappa*100,3)
 
     """Store the results as a dataframe in a csv file"""
-    results = [str(test.count()), (str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
+    results = [(str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
     schema = StructType([
-        StructField('Test', StringType(), False),
         StructField('ROC', StringType(), False),
         StructField('Accuracy', StringType(), False),
         StructField('Kappa', StringType(), False),
@@ -86,7 +85,7 @@ def binomial_logistic_regression(train, test, iters):
     results_df.write.csv('./binomial.log.regress', header=True, mode="overwrite")
 
 if __name__ == "__main__":
-  my_df = is_df("./filtered.small.training")
+  my_df = is_df("./filteredC.small.training")
   """Preprocess the df"""
   my_cols = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I", "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M"]
   label_col = ["class"]
@@ -94,4 +93,4 @@ if __name__ == "__main__":
   """Get the train (70%) and test (30%) dataset"""
   train, test = preproc_df.randomSplit([0.7, 0.3], seed = 2020)
   """Binomial Logistic Regression"""
-  binomial_logistic_regression(train, test, 10)
+  binomial_logistic_regression(train, test, 10000)
