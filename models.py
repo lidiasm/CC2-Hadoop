@@ -46,7 +46,7 @@ def binomial_logistic_regression(train, test, iters):
     """Binomial Logistic Regression"""
     lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=iters)
     """Cross validation to get the best value of regParam and elasticNetParam"""
-    grid = ParamGridBuilder().addGrid(lr.maxIter, [10, 100, 1000, 10000, 100000, 1000000])\
+    grid = ParamGridBuilder().addGrid(lr.maxIter, [100, 1000, 10000])\
             .addGrid(lr.regParam, [0.1, 0.01, 0.001, 0.0001])\
             .addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0]).build()
     evaluator = BinaryClassificationEvaluator()
@@ -69,10 +69,10 @@ def binomial_logistic_regression(train, test, iters):
     """ROC"""
     roc = round(trainingSummary.areaUnderROC*100, 3)
     """Confusion matrix"""
-    tp = predictions[(predictions.label == 1) & (predictions.prediction == 1)].count()
-    tn = predictions[(predictions.label == 0) & (predictions.prediction == 0)].count()
-    fp = predictions[(predictions.label == 0) & (predictions.prediction == 1)].count()
-    fn = predictions[(predictions.label == 1) & (predictions.prediction == 0)].count()
+    tp = predictions[(predictions['class'] == 1) & (predictions.prediction == 1)].count()
+    tn = predictions[(predictions['class'] == 0) & (predictions.prediction == 0)].count()
+    fp = predictions[(predictions['class'] == 0) & (predictions.prediction == 1)].count()
+    fn = predictions[(predictions['class'] == 1) & (predictions.prediction == 0)].count()
     total = tp+tn+fp+fn
     """Accuracy"""
     accuracy = float(tp+tn)/float(tp+tn+fp+fn)
