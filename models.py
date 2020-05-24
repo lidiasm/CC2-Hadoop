@@ -26,6 +26,7 @@ def preprocess_df(df, selected_columns, label_column):
         a label column with the indexes of each class."""
     assembler_features = VectorAssembler(inputCols=selected_columns, outputCol="features")
     label_indexes = StringIndexer(inputCol = 'class', outputCol = 'label')
+    label_indexes = label_indexes.setHandleInvalid("skip")
     stages = []
     stages += [assembler_features]
     stages += [label_indexes]
@@ -39,6 +40,7 @@ def preprocess_df(df, selected_columns, label_column):
     return preprocessed_df
 
 def binomial_logistic_regression(train, test, iters):
+    train.printSchema()
     """Binomial Logistic Regression"""
     lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=iters)
     lrModel = lr.fit(train)
@@ -80,7 +82,6 @@ if __name__ == "__main__":
   my_cols = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I", "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M"]
   label_col = ["class"]
   preproc_df = preprocess_df(my_df, my_cols, label_col)
-  preproc_df.printSchema()
   """Get the train (70%) and test (30%) dataset"""
   train, test = preproc_df.randomSplit([0.7, 0.3], seed = 2020)
   """Binomial Logistic Regression"""
