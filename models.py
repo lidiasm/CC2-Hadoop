@@ -70,8 +70,9 @@ def binomial_logistic_regression(train, test, iters):
     kappa = round(kappa*100,3)
 
     """Store the results as a dataframe in a csv file"""
-    results = [(str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
+    results = [str(test.count()), (str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
     schema = StructType([
+        StructField('Test', StringType(), False),
         StructField('ROC', StringType(), False),
         StructField('Accuracy', StringType(), False),
         StructField('Kappa', StringType(), False),
