@@ -80,8 +80,8 @@ if __name__ == "__main__":
   my_cols = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I", "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M"]
   label_col = ["class"]
   preproc_df = preprocess_df(my_df, my_cols, label_col)
-  #preproc_df.printSchema()
+  preproc_df.printSchema()
   """Get the train (70%) and test (30%) dataset"""
-  train, test = preproc_df.randomSplit([0.7, 0.3], seed = 2020)
+  #train, test = preproc_df.randomSplit([0.7, 0.3], seed = 2020)
   """Binomial Logistic Regression"""
-  binomial_logistic_regression(train, test, 10)
+  #binomial_logistic_regression(train, test, 10)
