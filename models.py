@@ -57,6 +57,7 @@ def binomial_logistic_regression(train, test, iters):
     best_iters = best_model._java_obj.getMaxIter()
     best_reg = best_model._java_obj.getRegParam()
     best_elastic = best_model._java_obj.getElasticNetParam()
+    print("MEJORES PARAMS", best_iters, best_reg, best_elastic)
     # TRAIN    
     lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', 
         maxIter=best_iters, regParam=best_reg, elasticNetParam=best_elastic)
