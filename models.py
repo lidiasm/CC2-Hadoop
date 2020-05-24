@@ -58,7 +58,9 @@ def binomial_logistic_regression(train, test, iters):
     # False Negatives
     fn = predictions[(predictions.label == 1) & (predictions.prediction == 0)].count()
     total = tp+tn+fp+fn
-
+    print('Confusion matrix')
+    print([[tn,fn], [fp, tp]])
+    
     """Accuracy"""
     accuracy = float(tp+tn)/float(tp+tn+fp+fn)
     print('Accuracy:',(round(accuracy*100,3)),'%')
