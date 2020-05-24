@@ -30,7 +30,7 @@ def read_data():
 def create_new_df(df, columns):
     """Creates a new dataframe with the specified columns"""
     new_df = df.select(columns)
-    new_df.write.csv('./filteredC.small.training2', header=True, mode="overwrite")
+    new_df.write.csv('./filteredC.small.training', header=True, mode="overwrite")
 
 if __name__ == "__main__":
     data = read_data()
