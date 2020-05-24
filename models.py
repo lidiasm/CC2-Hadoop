@@ -86,7 +86,7 @@ def binomial_logistic_regression(train, test, iters):
     results_df.write.csv('./binomial.log.regress', header=True, mode="overwrite")
 
 if __name__ == "__main__":
-  my_df = is_df("./filtered.small.training")
+  my_df = is_df("./filteredC.small.training")
   """Preprocess the df"""
   my_cols = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I", "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M"]
   label_col = ["class"]
