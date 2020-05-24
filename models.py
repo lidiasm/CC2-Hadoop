@@ -4,8 +4,6 @@ import os.path
 from pyspark.ml.feature import VectorAssembler, StringIndexer
 from pyspark.ml import Pipeline
 from pyspark.ml.classification import LogisticRegression
-from sklearn.metrics import confusion_matrix
-import numpy as np
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -51,21 +49,15 @@ def binomial_logistic_regression(train, test, iters):
     print('Area under ROC:', round(trainingSummary.areaUnderROC*100, 3), '%')
 
     """Confusion matrix"""
-    y_true = predictions.select("class")
-    y_true = y_true.toPandas()
-    y_pred = predictions.select("prediction")
-    y_pred = y_pred.toPandas()
-    cnf_matrix = confusion_matrix(y_true, y_pred)
-    print('Confusion matrix')
-    print(cnf_matrix)
-
-    # Get the number of correct answers and mistakes from the confusion matrix
-    cnf_matrix_np = np.matrix(cnf_matrix)
-    total = cnf_matrix_np.sum()
-    tp = cnf_matrix[1][1]
-    tn = cnf_matrix[0][0]
-    fp = cnf_matrix[1][0]
-    fn = cnf_matrix[0][1]
+    # True Positives
+    tp = predictions[(predictions.label == 1) & (predictions.prediction == 1)].count()
+    # True Negatives
+    tn = predictions[(predictions.label == 0) & (predictions.prediction == 0)].count()
+    # False Positives
+    fp = predictions[(predictions.label == 0) & (predictions.prediction == 1)].count()
+    # False Negatives
+    fn = predictions[(predictions.label == 1) & (predictions.prediction == 0)].count()
+    total = tp+tn+fp+fn
 
     """Accuracy"""
     accuracy = float(tp+tn)/float(tp+tn+fp+fn)
