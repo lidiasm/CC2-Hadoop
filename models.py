@@ -94,4 +94,4 @@ if __name__ == "__main__":
   """Get the train (70%) and test (30%) dataset"""
   train, test = preproc_df.randomSplit([0.7, 0.3], seed = 2020)
   """Binomial Logistic Regression"""
-  binomial_logistic_regression(train, test, 10)
+  binomial_logistic_regression(train, test, 10000)
