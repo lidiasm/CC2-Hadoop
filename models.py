@@ -34,8 +34,7 @@ def balanced_classes(df):
     results = [(str(pos), str(neg))]
     schema = StructType([
         StructField('Positives', StringType(), False),
-        StructField('Negatives', StringType(), False),
-        StructField('Kappa', StringType(), False),
+        StructField('Negatives', StringType(), False)
     ])
     results_df = ss.createDataFrame(results, schema)
     results_df.write.csv('./balanced.classes', header=True, mode="overwrite")
