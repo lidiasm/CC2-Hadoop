@@ -44,9 +44,8 @@ def preprocess_df(df, selected_columns, label_column):
     return preprocessed_df
 
 def scale_features(df):
-    """Normalize features in range [0,1] with MinMax scale:
-        vn = (v – vmin) / (vmax – vmin)
-    by adding the column 'scaledFeatures' """
+    """Normalize features in range [0,1] with MinMax scale
+        by adding the column 'scaledFeatures' """
     scaler = MinMaxScaler(inputCol="features", outputCol="scaledFeatures")
     scalerModel = scaler.fit(df)
     scaledData = scalerModel.transform(df)
