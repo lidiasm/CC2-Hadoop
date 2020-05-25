@@ -25,6 +25,21 @@ def is_df(df_file):
     else:
         raise Exception("ERROR. The file doesn't exists.")
 
+def balanced_classes(df):
+    """Gets the number of positive and negative labels in order to know if the 
+        classes are balanced."""
+    pos = df[df['class'] == 1].count()
+    neg = df[df['class'] == 0].count()
+    """Store the results as a dataframe in a csv file"""
+    results = [(str(pos), str(neg))]
+    schema = StructType([
+        StructField('Positives', StringType(), False),
+        StructField('Negatives', StringType(), False),
+        StructField('Kappa', StringType(), False),
+    ])
+    results_df = ss.createDataFrame(results, schema)
+    results_df.write.csv('./balanced.classes', header=True, mode="overwrite")
+
 def preprocess_df(df, selected_columns, label_column):
     """Preprocesses the dataframe in order to train the models. First we add
         a feature column in which all predicted columns are together. Then we add
@@ -127,6 +142,8 @@ def naive_bayes(train, test):
 
 if __name__ == "__main__":
     my_df = is_df("./filteredC.small.training")
+    # Balanced classes
+    balanced_classes(my_df)
     # My 6 columns + Class column
     my_cols = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I", "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M"]
     label_col = ["class"]
