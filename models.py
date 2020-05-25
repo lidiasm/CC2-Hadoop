@@ -42,25 +42,21 @@ def preprocess_df(df, selected_columns, label_column):
     #preprocessed_df.printSchema()
     return preprocessed_df
 
-def binomial_logistic_regression(train, test, iters):
+def binomial_logistic_regression(train, test, iters, regularization):
     """Binomial Logistic Regression"""
-    lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=iters)
+    lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', 
+        maxIter=iters, elasticNetParam=regularization)
     """Cross validation to get the best value of regParam and elasticNetParam"""
-    grid = ParamGridBuilder().addGrid(lr.maxIter, [100, 1000, 10000])\
-            .addGrid(lr.regParam, [0.1, 0.01, 0.001, 0.0001])\
-            .addGrid(lr.elasticNetParam, [0.0, 0.5, 1.0]).build()
+    grid = ParamGridBuilder().addGrid(lr.regParam, [0.1, 0.01, 0.001, 0.0001]).build()
     evaluator = BinaryClassificationEvaluator()
     cv = CrossValidator(estimator=lr, estimatorParamMaps=grid, evaluator=evaluator)
     cv_model = cv.fit(train)
     best_model = cv_model.bestModel
-    """Train with the best values"""
-    best_iters = best_model._java_obj.getMaxIter()
-    best_reg = best_model._java_obj.getRegParam()
-    best_elastic = best_model._java_obj.getElasticNetParam()
-    print("MEJORES PARAMS", best_iters, best_reg, best_elastic)
+    """Train with the best lambda for the specified regularization"""
+    best_lambda = best_model._java_obj.getRegParam()
     # TRAIN    
     lr = LogisticRegression(featuresCol = 'features', labelCol = 'label', 
-        maxIter=best_iters, regParam=best_reg, elasticNetParam=best_elastic)
+        maxIter=iters, regParam=best_lambda, elasticNetParam=regularization)
     lrModel = lr.fit(train)
     
     """Summary of the model"""
@@ -69,10 +65,10 @@ def binomial_logistic_regression(train, test, iters):
     """ROC"""
     roc = round(trainingSummary.areaUnderROC*100, 3)
     """Confusion matrix"""
-    tp = predictions[(predictions['class'] == 1) & (predictions.prediction == 1)].count()
-    tn = predictions[(predictions['class'] == 0) & (predictions.prediction == 0)].count()
-    fp = predictions[(predictions['class'] == 0) & (predictions.prediction == 1)].count()
-    fn = predictions[(predictions['class'] == 1) & (predictions.prediction == 0)].count()
+    tp = predictions[(predictions['class'] == 1) & (predictions['prediction'] == 1)].count()
+    tn = predictions[(predictions['class'] == 0) & (predictions['prediction'] == 0)].count()
+    fp = predictions[(predictions['class'] == 0) & (predictions['prediction'] == 1)].count()
+    fn = predictions[(predictions['class'] == 1) & (predictions['prediction'] == 0)].count()
     total = tp+tn+fp+fn
     """Accuracy"""
     accuracy = float(tp+tn)/float(tp+tn+fp+fn)
@@ -109,4 +105,4 @@ if __name__ == "__main__":
   """Get the train (70%) and test (30%) dataset"""
   train, test = preproc_df.randomSplit([0.7, 0.3], seed = 2020)
   """Binomial Logistic Regression"""
-  binomial_logistic_regression(train, test, 10000)
+  binomial_logistic_regression(train, test, 10000, 1)
