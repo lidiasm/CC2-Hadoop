@@ -110,10 +110,19 @@ def binomial_logistic_regression(train, test, iters, regularization):
     return predictions
 
 def naive_bayes(train, test):
-    """Naive Bayes model"""
-    nb = NaiveBayes(smoothing=1.0, modelType="multinomial", featuresCol='scaledFeatures')
-    nb_model = nb.fit(train)
+    """Naive Bayes model."""
+    nb = NaiveBayes(modelType="multinomial", featuresCol='scaledFeatures')
+    grid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.5, 1.0]).build()
+    evaluator = BinaryClassificationEvaluator()
+    cv = CrossValidator(estimator=nb, estimatorParamMaps=grid, evaluator=evaluator)
+    cv_model = cv.fit(train)
+    best_model = cv_model.bestModel
+    best_smooth = best_model._java_obj.getSmoothing()
+    """Training with the best smoothing value"""
+    best_nb = NaiveBayes(smoothing=best_smooth, modelType="multinomial", featuresCol='scaledFeatures')
+    nb_model = best_nb.fit(train)
     predictions = nb_model.transform(test)
+    
     return predictions
 
 if __name__ == "__main__":
@@ -134,4 +143,4 @@ if __name__ == "__main__":
     
     """Naive Bayes models"""
     preds_nb = naive_bayes(train, test)
-    evaluate_model(preds_nb, 'naive.bayes')
+    evaluate_model(preds_nb, 'naive.bayes.multinomial')
