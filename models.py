@@ -8,6 +8,7 @@ from pyspark.sql.types import StringType, StructType, StructField
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 from pyspark.ml.feature import MinMaxScaler
+from pyspark.ml.classification import NaiveBayes
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -47,16 +48,17 @@ def scale_features(df):
     """Normalize features in range [0,1] with MinMax scale
         by adding the column 'scaledFeatures' """
     scaler = MinMaxScaler(inputCol="features", outputCol="scaledFeatures")
-    scalerModel = scaler.fit(df)
-    scaledData = scalerModel.transform(df)
-    return scaledData
+    scaler_model = scaler.fit(df)
+    scaled_data = scaler_model.transform(df)
+    return scaled_data
 
-def evaluate_model(model_summary, predictions, file):
-    """Evaluates a model by using its summary and predictions in order to get
+def evaluate_model(predictions, file):
+    """Evaluates a model by using its predictions in order to get
         the area under the curve ROC, accuracy, Kappa coefficient and the values of
         the confusion matrix. All this data will be stored in a csv file."""
     # ROC
-    roc = round(model_summary.areaUnderROC*100, 3)
+    evaluator = BinaryClassificationEvaluator()
+    roc = round(evaluator.evaluate(predictions)*100, 3)
     # Values of confusion matrix: true positives, true negatives
     tp = predictions[(predictions['class'] == 1) & (predictions['prediction'] == 1)].count()
     tn = predictions[(predictions['class'] == 0) & (predictions['prediction'] == 0)].count()
@@ -100,12 +102,19 @@ def binomial_logistic_regression(train, test, iters, regularization):
     best_lambda = best_model._java_obj.getRegParam()
     lr = LogisticRegression(featuresCol = 'scaledFeatures', labelCol = 'label', 
         maxIter=iters, regParam=best_lambda, elasticNetParam=regularization)
-    lrModel = lr.fit(train)
+    lr_model = lr.fit(train)
     """Summary of the model and predictions"""
-    trainingSummary = lrModel.summary
-    predictions = lrModel.transform(test)
+    #summary = lr_model.summary
+    predictions = lr_model.transform(test)
     
-    return [trainingSummary, predictions]
+    return predictions
+
+def naive_bayes(train, test):
+    """Naive Bayes model"""
+    nb = NaiveBayes(smoothing=1.0, modelType="multinomial", featuresCol='scaledFeatures')
+    nb_model = nb.fit(train)
+    predictions = nb_model.transform(test)
+    return predictions
 
 if __name__ == "__main__":
     my_df = is_df("./filteredC.small.training")
@@ -118,7 +127,11 @@ if __name__ == "__main__":
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
     
     """Binomial Logistic Regression models"""
-    results_ridge = binomial_logistic_regression(train, test, 10000, 0.0)
-    evaluate_model(results_ridge[0], results_ridge[1], 'blg.ridge')
-    results_lasso = binomial_logistic_regression(train, test, 10000, 1.0)
-    evaluate_model(results_lasso[0], results_lasso[1], 'blg.lasso')
+    #preds_ridge = binomial_logistic_regression(train, test, 10000, 0.0)
+    #evaluate_model(preds_ridge, 'blg.ridge')
+    #preds_lasso = binomial_logistic_regression(train, test, 10000, 1.0)
+    #evaluate_model(preds_lasso, 'blg.lasso')
+    
+    """Naive Bayes models"""
+    preds_nb = naive_bayes(train, test)
+    evaluate_model(preds_nb, 'naive.bayes')
