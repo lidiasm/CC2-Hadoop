@@ -178,11 +178,11 @@ if __name__ == "__main__":
     #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    #preds_nb = naive_bayes(train, test)
-    #evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    preds_nb = naive_bayes(train, test)
+    evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Trees models"""
-    preds_dt_gini = decision_trees(train, test, 'gini')
-    evaluate_model(preds_dt_gini, 'decision.trees.gini')
-    preds_dt_entropy = decision_trees(train, test, 'entropy')
-    evaluate_model(preds_dt_entropy, 'decision.trees.entropy')
+    #preds_dt_gini = decision_trees(train, test, 'gini')
+    #evaluate_model(preds_dt_gini, 'decision.trees.gini')
+    #preds_dt_entropy = decision_trees(train, test, 'entropy')
+    #evaluate_model(preds_dt_entropy, 'decision.trees.entropy')
