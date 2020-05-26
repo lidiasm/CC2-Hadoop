@@ -11,6 +11,7 @@ from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.classification import NaiveBayes
 from pyspark.mllib.evaluation import MulticlassMetrics
 from pyspark.ml.classification import DecisionTreeClassifier
+from pyspark.ml.classification import RandomForestClassifier
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -152,13 +153,20 @@ def naive_bayes(train, test):
     
     return predictions
 
-def decision_trees(train, test, imp, depth, min_inst):
-    """Decision Tree model"""
+def decision_tree(train, test, imp, depth):
+    """Decision Tree model in which it uses one decision tree in order to train
+        a model. The maximum number of nodes can be specified (max 30)."""
     dt = DecisionTreeClassifier(labelCol="label", featuresCol="scaledFeatures", 
-        impurity=imp, maxDepth=depth, minInfoGain=min_inst)
+        impurity=imp, maxDepth=depth)
     dt_model = dt.fit(train)
     predictions = dt_model.transform(test)
     
+    return predictions
+
+def random_forest(train, test):
+    rf = RandomForestClassifier(labelCol="label", featuresCol="scaledFeatures")
+    rf_model = rf.fit(train)
+    predictions = rf_model.transform(test)
     return predictions
 
 if __name__ == "__main__":
@@ -183,8 +191,12 @@ if __name__ == "__main__":
     #preds_nb = naive_bayes(train, test)
     #evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
-    """Decision Trees models"""
-    preds_dt_gini = decision_trees(train, test, 'gini', 15, 1)
-    evaluate_model(preds_dt_gini, 'decision.trees.gini')
-    preds_dt_entropy = decision_trees(train, test, 'entropy', 15, 1)
-    evaluate_model(preds_dt_entropy, 'decision.trees.entropy')
+    """Decision Tree models"""
+    #preds_dt_gini = decision_tree(train, test, 'gini', 15)
+    #evaluate_model(preds_dt_gini, 'decision.tree.gini')
+    #preds_dt_entropy = decision_tree(train, test, 'entropy', 15)
+    #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
+    
+    """Random Forest models"""
+    preds_rf = random_forest(train, test)
+    evaluate_model(preds_rf, 'random.forest')
