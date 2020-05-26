@@ -164,7 +164,8 @@ def decision_tree(train, test, imp, depth):
     return predictions
 
 def random_forest(train, test):
-    rf = RandomForestClassifier(labelCol="label", featuresCol="scaledFeatures")
+    rf = RandomForestClassifier(labelCol="label", featuresCol="scaledFeatures",
+            maxDepth=15, impurity='entropy')
     rf_model = rf.fit(train)
     predictions = rf_model.transform(test)
     return predictions
