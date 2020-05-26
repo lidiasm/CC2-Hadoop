@@ -46,6 +46,7 @@ def preprocess_df(df, selected_columns, label_column):
         a label column with the indexes of each class."""
     assembler_features = VectorAssembler(inputCols=selected_columns, outputCol="features")
     label_indexes = StringIndexer(inputCol = 'class', outputCol = 'label')
+    # Avoid null issues
     label_indexes = label_indexes.setHandleInvalid("skip")
     stages = []
     stages += [assembler_features]
@@ -82,10 +83,10 @@ def evaluate_model(predictions, file):
     metrics = MulticlassMetrics(predictionAndLabel)
     cnf_matrix = metrics.confusionMatrix()
     cnf_matrix_list = cnf_matrix.toArray().tolist()
-    tn = cnf_matrix_list[0][0]
-    fn = cnf_matrix_list[0][1]
-    fp = cnf_matrix_list[1][0]
-    tp = cnf_matrix_list[1][1]
+    tn = int(cnf_matrix_list[0][0])
+    fn = int(cnf_matrix_list[0][1])
+    fp = int(cnf_matrix_list[1][0])
+    tp = int(cnf_matrix_list[1][1])
     total = tn + fn + fp + tp
     
     # Kappa Coefficient
@@ -95,7 +96,7 @@ def evaluate_model(predictions, file):
     kappa = round(kappa*100,3)
     
      # Accuracy
-    accuracy = metrics.accuracy
+    accuracy = round(metrics.accuracy*100, 3)
     
     """Store the results as a dataframe in a csv file"""
     results = [(str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
@@ -134,7 +135,8 @@ def binomial_logistic_regression(train, test, iters, regularization):
     return predictions
 
 def naive_bayes(train, test):
-    """Naive Bayes model."""
+    """Naive Bayes model. It uses cross validation to calculate the best smoothing
+        value to train the model."""
     nb = NaiveBayes(modelType="multinomial", featuresCol='scaledFeatures')
     grid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.5, 1.0]).build()
     evaluator = BinaryClassificationEvaluator()
@@ -147,6 +149,14 @@ def naive_bayes(train, test):
     nb_model = best_nb.fit(train)
     predictions = nb_model.transform(test)
     
+    return predictions
+
+def decision_trees(train, test, imp):
+    """Decision Trees model."""
+    from pyspark.ml.classification import DecisionTreeClassifier
+    dt = DecisionTreeClassifier(labelCol="label", featuresCol="scaledFeatures", impurity=imp)
+    dt_model = dt.fit(train)
+    predictions = dt_model.transform(test)
     return predictions
 
 if __name__ == "__main__":
@@ -168,5 +178,11 @@ if __name__ == "__main__":
     #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    preds_nb = naive_bayes(train, test)
-    evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    #preds_nb = naive_bayes(train, test)
+    #evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    
+    """Decision Trees models"""
+    preds_dt_gini = decision_trees(train, test, 'gini')
+    evaluate_model(preds_dt_gini, 'decision.trees.gini')
+    preds_dt_entropy = decision_trees(train, test, 'entropy')
+    evaluate_model(preds_dt_entropy, 'decision.trees.entropy')
