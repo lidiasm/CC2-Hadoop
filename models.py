@@ -9,6 +9,7 @@ from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.classification import NaiveBayes
+from pyspark.mllib.evaluation import MulticlassMetrics
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -73,20 +74,29 @@ def evaluate_model(predictions, file):
     # ROC
     evaluator = BinaryClassificationEvaluator()
     roc = round(evaluator.evaluate(predictions)*100, 3)
-    # Values of confusion matrix: true positives, true negatives
-    tp = predictions[(predictions['class'] == 1) & (predictions['prediction'] == 1)].count()
-    tn = predictions[(predictions['class'] == 0) & (predictions['prediction'] == 0)].count()
-    fp = predictions[(predictions['class'] == 0) & (predictions['prediction'] == 1)].count()
-    fn = predictions[(predictions['class'] == 1) & (predictions['prediction'] == 0)].count()
-    total = tp+tn+fp+fn
-    # Accuracy
-    accuracy = float(tp+tn)/float(tp+tn+fp+fn)
-    accuracy = round(accuracy*100,3)
+    
+    # Confusion matrix
+    """Creates (prediction, label) pairs in order to use MulticlassMetrics"""
+    predictionAndLabel = predictions.select("prediction", "label").rdd
+    # Generate confusion matrix
+    metrics = MulticlassMetrics(predictionAndLabel)
+    cnf_matrix = metrics.confusionMatrix()
+    cnf_matrix_list = cnf_matrix.toArray().tolist()
+    tn = cnf_matrix_list[0][0]
+    fn = cnf_matrix_list[0][1]
+    fp = cnf_matrix_list[1][0]
+    tp = cnf_matrix_list[1][1]
+    total = tn + fn + fp + tp
+    
     # Kappa Coefficient
     prob_observed = float(tp+tn)/total
     prob_expected = float(((tn+fp)*(tn+fn))+((fn+tp)*(fp+tp)))/(total*total)
     kappa = (float(prob_observed-prob_expected)/(1-prob_expected))
     kappa = round(kappa*100,3)
+    
+     # Accuracy
+    accuracy = metrics.accuracy
+    
     """Store the results as a dataframe in a csv file"""
     results = [(str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
     schema = StructType([
