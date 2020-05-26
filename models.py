@@ -10,6 +10,7 @@ from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.ml.classification import NaiveBayes
 from pyspark.mllib.evaluation import MulticlassMetrics
+from pyspark.ml.classification import DecisionTreeClassifier
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -68,7 +69,7 @@ def scale_features(df):
     scaled_data = scaler_model.transform(df)
     return scaled_data
 
-def evaluate_model(predictions, file):
+def evaluate_model(predictions, file, add):
     """Evaluates a model by using its predictions in order to get
         the area under the curve ROC, accuracy, Kappa coefficient and the values of
         the confusion matrix. All this data will be stored in a csv file."""
@@ -99,7 +100,7 @@ def evaluate_model(predictions, file):
     accuracy = round(metrics.accuracy*100, 3)
     
     """Store the results as a dataframe in a csv file"""
-    results = [(str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp))]
+    results = [(str(roc), str(accuracy), str(kappa), str(tn), str(fn), str(fp), str(tp), str(add))]
     schema = StructType([
         StructField('ROC', StringType(), False),
         StructField('Accuracy', StringType(), False),
@@ -108,6 +109,7 @@ def evaluate_model(predictions, file):
         StructField('FN', StringType(), False),
         StructField('FP', StringType(), False),
         StructField('TP', StringType(), False),
+        StructField('Depth', StringType(), False),
     ])
     results_df = ss.createDataFrame(results, schema)
     results_df.write.csv(file, header=True, mode="overwrite")
@@ -152,12 +154,21 @@ def naive_bayes(train, test):
     return predictions
 
 def decision_trees(train, test, imp):
-    """Decision Trees model."""
-    from pyspark.ml.classification import DecisionTreeClassifier
+    """Decision Tree model"""
     dt = DecisionTreeClassifier(labelCol="label", featuresCol="scaledFeatures", impurity=imp)
+    grid = ParamGridBuilder().addGrid(dt.maxDepth, [10, 20, 30]).build()
+    evaluator = BinaryClassificationEvaluator()
+    cv = CrossValidator(estimator=dt, estimatorParamMaps=grid, evaluator=evaluator)
+    cv_model = cv.fit(train)
+    best_model = cv_model.bestModel
+    best_maxDepth = best_model._java_obj.getMaxDepth()
+    ## TRAIN    
+    dt = DecisionTreeClassifier(labelCol="label", featuresCol="scaledFeatures", impurity=imp, maxDepth=best_maxDepth)
     dt_model = dt.fit(train)
     predictions = dt_model.transform(test)
-    return predictions
+    
+    return [predictions, best_maxDepth]
+
 
 if __name__ == "__main__":
     my_df = is_df("./filteredC.small.training")
@@ -178,11 +189,11 @@ if __name__ == "__main__":
     #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    preds_nb = naive_bayes(train, test)
-    evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    #preds_nb = naive_bayes(train, test)
+    #evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Trees models"""
-    #preds_dt_gini = decision_trees(train, test, 'gini')
-    #evaluate_model(preds_dt_gini, 'decision.trees.gini')
-    #preds_dt_entropy = decision_trees(train, test, 'entropy')
-    #evaluate_model(preds_dt_entropy, 'decision.trees.entropy')
+    preds_dt_gini = decision_trees(train, test, 'gini')
+    evaluate_model(preds_dt_gini[0], 'decision.trees.gini', preds_dt_gini[1])
+    preds_dt_entropy = decision_trees(train, test, 'entropy')
+    evaluate_model(preds_dt_entropy[0], 'decision.trees.entropy', preds_dt_entropy[1])
