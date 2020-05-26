@@ -155,7 +155,7 @@ def naive_bayes(train, test):
 def decision_trees(train, test, imp, depth, min_inst):
     """Decision Tree model"""
     dt = DecisionTreeClassifier(labelCol="label", featuresCol="scaledFeatures", 
-        impurity=imp, maxDepth=depth, minInstancesPerNode=min_inst)
+        impurity=imp, maxDepth=depth, minInfoGain=min_inst)
     dt_model = dt.fit(train)
     predictions = dt_model.transform(test)
     
