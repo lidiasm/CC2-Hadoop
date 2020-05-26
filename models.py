@@ -184,7 +184,7 @@ if __name__ == "__main__":
     #evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Trees models"""
-    preds_dt_gini = decision_trees(train, test, 'gini', 15, 2)
+    preds_dt_gini = decision_trees(train, test, 'gini', 15, 1)
     evaluate_model(preds_dt_gini, 'decision.trees.gini')
-    preds_dt_entropy = decision_trees(train, test, 'entropy', 15, 2)
+    preds_dt_entropy = decision_trees(train, test, 'entropy', 15, 1)
     evaluate_model(preds_dt_entropy, 'decision.trees.entropy')
