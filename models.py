@@ -89,8 +89,8 @@ def evaluate_model(predictions, file):
         the area under the curve ROC, accuracy, Kappa coefficient and the values of
         the confusion matrix. All this data will be stored in a csv file."""
     # ROC
-    evaluator = BinaryClassificationEvaluator()
-    roc = round(evaluator.evaluate(predictions)*100, 3)
+    #evaluator = BinaryClassificationEvaluator()
+    #roc = round(evaluator.evaluate(predictions)*100, 3)
     
     # Confusion matrix
     """Creates (prediction, label) pairs in order to use MulticlassMetrics"""
