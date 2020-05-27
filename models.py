@@ -204,7 +204,7 @@ if __name__ == "__main__":
     #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    preds_nb = naive_bayes(train, test)
+    preds_nb = naive_bayes(balanced_train, test)
     evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
