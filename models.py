@@ -81,18 +81,6 @@ def under_sampling(df):
     new_df0 = df0.sample(withReplacement=False, fraction=fr, seed=2020)
     # Join the positive and the sampled negative dataframes
     balanced_df = new_df0.union(df1)
-    
-    """Store the results as a dataframe in a csv file"""
-    results = [(str(df0.count()), str(df1.count()), str(new_df0.count()), str(fr))]
-    schema = StructType([
-        StructField('Clase 0', StringType(), False),
-        StructField('Clase 1', StringType(), False),
-        StructField('Nueva clase 0', StringType(), False),
-        StructField('Factor', StringType(), False)
-    ])
-    results_df = ss.createDataFrame(results, schema)
-    results_df.write.csv('./test', header=True, mode="overwrite")
-    
     return balanced_df
 
 def evaluate_model(predictions, file):
@@ -208,13 +196,12 @@ if __name__ == "__main__":
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
     balanced_train = under_sampling(train)
     balanced_classes(balanced_train, './traindf.balanced.classes')
-    balanced_train.show()
     
     """Binomial Logistic Regression models"""
-    #preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
-    #evaluate_model(preds_ridge, 'blg.ridge')
-    #preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
-    #evaluate_model(preds_lasso, 'blg.lasso')
+    preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
+    evaluate_model(preds_ridge, 'blg.ridge')
+    preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
+    evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
     #preds_nb = naive_bayes(train, test)
