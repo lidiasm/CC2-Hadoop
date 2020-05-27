@@ -198,14 +198,14 @@ if __name__ == "__main__":
     balanced_classes(balanced_train, './traindf.balanced.classes')
     
     """Binomial Logistic Regression models"""
-    preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
-    evaluate_model(preds_ridge, 'blg.ridge')
-    preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
-    evaluate_model(preds_lasso, 'blg.lasso')
+    #preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
+    #evaluate_model(preds_ridge, 'blg.ridge')
+    #preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
+    #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    #preds_nb = naive_bayes(train, test)
-    #evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    preds_nb = naive_bayes(train, test)
+    evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
     #preds_dt_gini = decision_tree(train, test, 'gini', 15)
