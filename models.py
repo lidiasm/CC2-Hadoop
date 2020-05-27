@@ -74,16 +74,16 @@ def under_sampling(df):
     """Undersamples the dataframe in order to balance the classes. To do that 
         the negative class will be reduced to the number of samples of the positive class."""
     # Get two dataframes with the negative and the positive class
-    df_class_0 = df[df['class'] == 0]
-    df_class_1 = df[df['class'] == 1]
+    df0 = df[df['class'] == 0]
+    df1 = df[df['class'] == 1]
+    fr = float(df1.count()) / float(df0.count())
     # Sample the negative class
-    new_df_class_0 = df_class_0.sample(withReplacement=False, 
-           fraction=float(df_class_1.count()/df_class_0.count()), seed=2020)
+    new_df0 = df0.sample(withReplacement=False, fraction=fr, seed=2020)
     # Join the positive and the sampled negative dataframes
-    balanced_df = new_df_class_0.union(df_class_1)
+    balanced_df = new_df0.union(df1)
     
     """Store the results as a dataframe in a csv file"""
-    results = [(str(df_class_0.count()), str(df_class_1.count()), str(new_df_class_0.count()), str(float(df_class_1.count()/df_class_0.count())))]
+    results = [(str(df0.count()), str(df1.count()), str(new_df0.count()), str(fr))]
     schema = StructType([
         StructField('Clase 0', StringType(), False),
         StructField('Clase 1', StringType(), False),
