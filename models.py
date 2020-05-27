@@ -170,15 +170,15 @@ def decision_tree(train, test, imp, depth):
     """Decision Tree model in which it uses one decision tree in order to train
         a model. The maximum number of nodes can be specified (max 30)."""
     dt = DecisionTreeClassifier(labelCol="label", featuresCol="scaledFeatures", 
-        impurity=imp, maxDepth=depth)
+        impurity=imp, maxDepth=depth, seed=2020)
     dt_model = dt.fit(train)
     predictions = dt_model.transform(test)
     
     return predictions
 
-def random_forest(train, test):
+def random_forest(train, test, imp, depth, n_trees):
     rf = RandomForestClassifier(labelCol="label", featuresCol="scaledFeatures",
-            maxDepth=15, impurity='entropy')
+            maxDepth=depth, impurity=imp, seed=2020, numTrees=n_trees)
     rf_model = rf.fit(train)
     predictions = rf_model.transform(test)
     return predictions
@@ -194,8 +194,8 @@ if __name__ == "__main__":
     scaled_df = scale_features(preproc_df)
     """Get the train (70%) and test (30%) dataset"""
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
-    balanced_train = under_sampling(train)
-    balanced_classes(balanced_train, './traindf.balanced.classes')
+    #balanced_train = under_sampling(train)
+    #balanced_classes(balanced_train, './traindf.balanced.classes')
     
     """Binomial Logistic Regression models"""
     #preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
@@ -208,11 +208,11 @@ if __name__ == "__main__":
     #evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
-    preds_dt_gini = decision_tree(balanced_train, test, 'gini', 15)
-    evaluate_model(preds_dt_gini, 'decision.tree.gini')
-    preds_dt_entropy = decision_tree(balanced_train, test, 'entropy', 15)
-    evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
+    #preds_dt_gini = decision_tree(balanced_train, test, 'gini', 15)
+    #evaluate_model(preds_dt_gini, 'decision.tree.gini')
+    #preds_dt_entropy = decision_tree(balanced_train, test, 'entropy', 15)
+    #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
     """Random Forest models"""
-    #preds_rf = random_forest(train, test)
-    #evaluate_model(preds_rf, 'random.forest')
+    preds_rf = random_forest(train, test, 'entropy', 15, 40)
+    evaluate_model(preds_rf, 'random.forest')
