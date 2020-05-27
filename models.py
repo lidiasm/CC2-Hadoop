@@ -28,7 +28,7 @@ def is_df(df_file):
     else:
         raise Exception("ERROR. The file doesn't exists.")
 
-def balanced_classes(df):
+def balanced_classes(df, file):
     """Gets the number of positive and negative labels in order to know if the 
         classes are balanced."""
     pos = df[df['class'] == 1].count()
@@ -40,7 +40,7 @@ def balanced_classes(df):
         StructField('Negatives', StringType(), False)
     ])
     results_df = ss.createDataFrame(results, schema)
-    results_df.write.csv('./balanced.classes', header=True, mode="overwrite")
+    results_df.write.csv(file, header=True, mode="overwrite")
     return [pos, neg]
 
 def preprocess_df(df, selected_columns, label_column):
@@ -187,7 +187,7 @@ def random_forest(train, test):
 if __name__ == "__main__":
     my_df = is_df("./filteredC.small.training")
     # Balanced classes
-    balanced_classes(my_df)
+    balanced_classes(my_df, './original.df.balanced.classes')
     # My 6 columns + Class column
     my_cols = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I", "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M"]
     label_col = ["class"]
@@ -196,6 +196,7 @@ if __name__ == "__main__":
     """Get the train (70%) and test (30%) dataset"""
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
     balanced_train = under_sampling(train)
+    balanced_classes(balanced_train, './traindf.balanced.classes')
     
     """Binomial Logistic Regression models"""
     preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
