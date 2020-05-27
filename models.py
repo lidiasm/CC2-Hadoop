@@ -91,6 +91,7 @@ def evaluate_model(predictions, file):
     # ROC
     #evaluator = BinaryClassificationEvaluator()
     #roc = round(evaluator.evaluate(predictions)*100, 3)
+    roc = 0
     
     # Confusion matrix
     """Creates (prediction, label) pairs in order to use MulticlassMetrics"""
