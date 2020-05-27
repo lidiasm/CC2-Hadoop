@@ -1,3 +1,4 @@
+import imblearn
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 import os.path
@@ -12,6 +13,7 @@ from pyspark.ml.classification import NaiveBayes
 from pyspark.mllib.evaluation import MulticlassMetrics
 from pyspark.ml.classification import DecisionTreeClassifier
 from pyspark.ml.classification import RandomForestClassifier
+from pyspark.ml.classification import MultilayerPerceptronClassifier
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -177,6 +179,8 @@ def decision_tree(train, test, imp, depth):
     return predictions
 
 def random_forest(train, test, imp, depth, n_trees):
+    """Random Forest model in which we specify the impurity metric, the maximum
+        number of nodes in a branch (max 30) and the maximum number of trees."""
     rf = RandomForestClassifier(labelCol="label", featuresCol="scaledFeatures",
             maxDepth=depth, impurity=imp, seed=2020, numTrees=n_trees)
     rf_model = rf.fit(train)
@@ -214,5 +218,5 @@ if __name__ == "__main__":
     #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
     """Random Forest models"""
-    preds_rf = random_forest(balanced_train, test, 'entropy', 15, 20)
-    evaluate_model(preds_rf, 'random.forest')
+   # preds_rf = random_forest(balanced_train, test, 'entropy', 15, 20)
+    #evaluate_model(preds_rf, 'random.forest')
