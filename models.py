@@ -187,6 +187,15 @@ def random_forest(train, test, imp, depth, n_trees):
     predictions = rf_model.transform(test)
     return predictions
 
+def multilayer_perceptron(train, test, iters, layers):
+    """Multilayer perceptron based on a feedforward neural network in which the
+        number of iterations can be specified as well as the layers. The first layer
+        has the number of features and the last the number of classes."""
+    nn = MultilayerPerceptronClassifier(maxIter=iters, layers=layers, blockSize=128, seed=2020)
+    nn_model = nn.fit(train)
+    predictions = nn_model.transform(test)
+    return predictions
+
 if __name__ == "__main__":
     my_df = is_df("./filteredC.small.training")
     # Balanced classes
@@ -220,3 +229,8 @@ if __name__ == "__main__":
     """Random Forest models"""
    # preds_rf = random_forest(balanced_train, test, 'entropy', 15, 20)
     #evaluate_model(preds_rf, 'random.forest')
+    
+    """Multilayer Perceptron models"""
+    layers = [6, 128, 64, 2]
+    preds_nn = multilayer_perceptron(train, test, 100, layers)
+    evaluate_model(preds_nn, 'nn.perceptron')
