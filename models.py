@@ -41,7 +41,6 @@ def balanced_classes(df, file):
     ])
     results_df = ss.createDataFrame(results, schema)
     results_df.write.csv(file, header=True, mode="overwrite")
-    return [pos, neg]
 
 def preprocess_df(df, selected_columns, label_column):
     """Preprocesses the dataframe in order to train the models. First we add
@@ -82,6 +81,18 @@ def under_sampling(df):
            fraction=float(df_class_1.count()/df_class_0.count()), seed=2020)
     # Join the positive and the sampled negative dataframes
     balanced_df = new_df_class_0.union(df_class_1)
+    
+    """Store the results as a dataframe in a csv file"""
+    results = [(str(df_class_0.count()), str(df_class_1.count()), str(new_df_class_0.count()), str(float(df_class_1.count()/df_class_0.count())))]
+    schema = StructType([
+        StructField('Clase 0', StringType(), False),
+        StructField('Clase 1', StringType(), False),
+        StructField('Nueva clase 0', StringType(), False),
+        StructField('Factor', StringType(), False)
+    ])
+    results_df = ss.createDataFrame(results, schema)
+    results_df.write.csv('./test', header=True, mode="overwrite")
+    
     return balanced_df
 
 def evaluate_model(predictions, file):
@@ -197,12 +208,13 @@ if __name__ == "__main__":
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
     balanced_train = under_sampling(train)
     balanced_classes(balanced_train, './traindf.balanced.classes')
+    balanced_train.show()
     
     """Binomial Logistic Regression models"""
-    preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
-    evaluate_model(preds_ridge, 'blg.ridge')
-    preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
-    evaluate_model(preds_lasso, 'blg.lasso')
+    #preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
+    #evaluate_model(preds_ridge, 'blg.ridge')
+    #preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
+    #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
     #preds_nb = naive_bayes(train, test)
