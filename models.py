@@ -194,7 +194,7 @@ if __name__ == "__main__":
     scaled_df = scale_features(preproc_df)
     """Get the train (70%) and test (30%) dataset"""
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
-    #balanced_train = under_sampling(train)
+    balanced_train = under_sampling(train)
     #balanced_classes(balanced_train, './traindf.balanced.classes')
     
     """Binomial Logistic Regression models"""
@@ -214,5 +214,5 @@ if __name__ == "__main__":
     #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
     """Random Forest models"""
-    preds_rf = random_forest(train, test, 'entropy', 15, 40)
+    preds_rf = random_forest(balanced_train, test, 'entropy', 15, 20)
     evaluate_model(preds_rf, 'random.forest')
