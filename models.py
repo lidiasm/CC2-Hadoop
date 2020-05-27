@@ -1,4 +1,3 @@
-import imblearn
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 import os.path
@@ -191,7 +190,7 @@ def multilayer_perceptron(train, test, iters, layers):
     """Multilayer perceptron based on a feedforward neural network in which the
         number of iterations can be specified as well as the layers. The first layer
         has the number of features and the last the number of classes."""
-    nn = MultilayerPerceptronClassifier(maxIter=iters, layers=layers, blockSize=128, seed=2020)
+    nn = MultilayerPerceptronClassifier(maxIter=iters, layers=layers, seed=2020)
     nn_model = nn.fit(train)
     predictions = nn_model.transform(test)
     return predictions
