@@ -41,6 +41,7 @@ def balanced_classes(df):
     ])
     results_df = ss.createDataFrame(results, schema)
     results_df.write.csv('./balanced.classes', header=True, mode="overwrite")
+    return [pos, neg]
 
 def preprocess_df(df, selected_columns, label_column):
     """Preprocesses the dataframe in order to train the models. First we add
@@ -69,6 +70,19 @@ def scale_features(df):
     scaler_model = scaler.fit(df)
     scaled_data = scaler_model.transform(df)
     return scaled_data
+
+def under_sampling(df):
+    """Undersamples the dataframe in order to balance the classes. To do that 
+        the negative class will be reduced to the number of samples of the positive class."""
+    # Get two dataframes with the negative and the positive class
+    df_class_0 = df[df['class'] == 0]
+    df_class_1 = df[df['class'] == 1]
+    # Sample the negative class
+    new_df_class_0 = df_class_0.sample(withReplacement=False, 
+           fraction=float(df_class_1.count()/df_class_0.count()), seed=2020)
+    # Join the positive and the sampled negative dataframes
+    balanced_df = new_df_class_0.union(df_class_1)
+    return balanced_df
 
 def evaluate_model(predictions, file):
     """Evaluates a model by using its predictions in order to get
@@ -181,12 +195,13 @@ if __name__ == "__main__":
     scaled_df = scale_features(preproc_df)
     """Get the train (70%) and test (30%) dataset"""
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
+    balanced_train = under_sampling(train)
     
     """Binomial Logistic Regression models"""
-    #preds_ridge = binomial_logistic_regression(train, test, 10000, 0.0)
-    #evaluate_model(preds_ridge, 'blg.ridge')
-    #preds_lasso = binomial_logistic_regression(train, test, 10000, 1.0)
-    #evaluate_model(preds_lasso, 'blg.lasso')
+    preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
+    evaluate_model(preds_ridge, 'blg.ridge')
+    preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
+    evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
     #preds_nb = naive_bayes(train, test)
@@ -199,5 +214,5 @@ if __name__ == "__main__":
     #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
     """Random Forest models"""
-    preds_rf = random_forest(train, test)
-    evaluate_model(preds_rf, 'random.forest')
+    #preds_rf = random_forest(train, test)
+    #evaluate_model(preds_rf, 'random.forest')
