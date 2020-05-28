@@ -217,14 +217,14 @@ if __name__ == "__main__":
     #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    preds_nb = naive_bayes(train_over, test)
-    evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    #preds_nb = naive_bayes(train_over, test)
+    #evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
-    #preds_dt_gini = decision_tree(train_over, test, 'gini', 15)
-    #evaluate_model(preds_dt_gini, 'decision.tree.gini')
-    #preds_dt_entropy = decision_tree(train_over, test, 'entropy', 15)
-    #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
+    preds_dt_gini = decision_tree(train_over, test, 'gini', 15)
+    evaluate_model(preds_dt_gini, 'decision.tree.gini')
+    preds_dt_entropy = decision_tree(train_over, test, 'entropy', 15)
+    evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
     """Random Forest models"""
    # preds_rf = random_forest(train_over, test, 'entropy', 15, 20)
