@@ -208,7 +208,7 @@ if __name__ == "__main__":
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
     #train_under = under_sampling(train)
     train_over = over_sampling(train)
-    balanced_classes(train_over, './train.over')
+    #balanced_classes(train_over, './train.over')
     
     """Binomial Logistic Regression models"""
     #preds_ridge = binomial_logistic_regression(train_over, test, 10000, 0.0)
@@ -221,11 +221,11 @@ if __name__ == "__main__":
     #evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
-    preds_dt_gini = decision_tree(train_over, test, 'gini', 15)
-    evaluate_model(preds_dt_gini, 'decision.tree.gini')
-    preds_dt_entropy = decision_tree(train_over, test, 'entropy', 15)
-    evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
+    #preds_dt_gini = decision_tree(train_over, test, 'gini', 15)
+    #evaluate_model(preds_dt_gini, 'decision.tree.gini')
+    #preds_dt_entropy = decision_tree(train_over, test, 'entropy', 15)
+    #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
     """Random Forest models"""
-   # preds_rf = random_forest(train_over, test, 'entropy', 15, 20)
-    #evaluate_model(preds_rf, 'random.forest')
+    preds_rf = random_forest(train_over, test, 'entropy', 15, 20)
+    evaluate_model(preds_rf, 'random.forest')
