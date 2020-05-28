@@ -197,7 +197,7 @@ def random_forest(train, test, imp, depth, n_trees):
 
 if __name__ == "__main__":
     my_df = is_df("./filteredC.small.training")
-    # Balanced classes
+    """Check the number of positive and negative samples of the original dataset"""
     balanced_classes(my_df, './original.df.balanced.classes')
     # My 6 columns + Class column
     my_cols = ["PSSM_r1_2_F", "PSSM_r1_-2_F", "PSSM_r2_1_I", "PSSM_r1_3_F", "PSSM_r1_-1_S", "PSSM_r2_3_M"]
@@ -206,26 +206,31 @@ if __name__ == "__main__":
     scaled_df = scale_features(preproc_df)
     """Get the train (70%) and test (30%) dataset"""
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
-    #train_under = under_sampling(train)
-    train_over = over_sampling(train)
-    #balanced_classes(train_over, './train.over')
+    
+    #Uncomment one of the two options.
+    """Under-sampling to balance the classes"""
+    balanced_train = under_sampling(train)
+    """Over-sampling to balance the classes"""
+    #balanced_train = over_sampling(train)
+    """Check the number of positive and negative samples of the new balanced dataset""" 
+    balanced_classes(balanced_train, './balanced.train')
     
     """Binomial Logistic Regression models"""
-    #preds_ridge = binomial_logistic_regression(train_over, test, 10000, 0.0)
-    #evaluate_model(preds_ridge, 'blg.ridge')
-    #preds_lasso = binomial_logistic_regression(train_over, test, 10000, 1.0)
-    #evaluate_model(preds_lasso, 'blg.lasso')
+    preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
+    evaluate_model(preds_ridge, 'blg.ridge')
+    preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
+    evaluate_model(preds_lasso, 'blg.lasso')
     
-    """Naive Bayes models"""
-    #preds_nb = naive_bayes(train_over, test)
-    #evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    """Naive Bayes model"""
+    preds_nb = naive_bayes(balanced_train, test)
+    evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
-    #preds_dt_gini = decision_tree(train_over, test, 'gini', 15)
-    #evaluate_model(preds_dt_gini, 'decision.tree.gini')
-    #preds_dt_entropy = decision_tree(train_over, test, 'entropy', 15)
-    #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
+    preds_dt_gini = decision_tree(balanced_train, test, 'gini', 15)
+    evaluate_model(preds_dt_gini, 'decision.tree.gini')
+    preds_dt_entropy = decision_tree(balanced_train, test, 'entropy', 15)
+    evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
-    """Random Forest models"""
-    preds_rf = random_forest(train_over, test, 'entropy', 15, 20)
+    """Random Forest model"""
+    preds_rf = random_forest(balanced_train, test, 'entropy', 15, 20)
     evaluate_model(preds_rf, 'random.forest')
