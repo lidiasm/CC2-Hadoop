@@ -12,7 +12,6 @@ from pyspark.ml.classification import NaiveBayes
 from pyspark.mllib.evaluation import MulticlassMetrics
 from pyspark.ml.classification import DecisionTreeClassifier
 from pyspark.ml.classification import RandomForestClassifier
-from pyspark.ml.classification import MultilayerPerceptronClassifier
 
 """Create Spark context with Spark configuration."""
 conf = SparkConf().setAppName("Practica 4. Lidia Sanchez Merida.")
@@ -60,7 +59,6 @@ def preprocess_df(df, selected_columns, label_column):
     preprocessed_df = pipeline_model.transform(df)
     cols = ['label', 'features'] + df.columns
     preprocessed_df = preprocessed_df.select(cols)
-    #preprocessed_df.printSchema()
     return preprocessed_df
 
 def scale_features(df):
@@ -84,14 +82,25 @@ def under_sampling(df):
     balanced_df = new_df0.union(df1)
     return balanced_df
 
+def over_sampling(df):
+    """Oversamples the dataframe in order to balance the classes. To do that new
+        samples will be duplicated in the positive class."""
+    df0 = df[df['class'] == 0]
+    df1 = df[df['class'] == 1]    
+    fr = float(df0.count()) / float(df1.count())
+    # Sample the positive class to create more samples
+    new_df1 = df1.sample(withReplacement=True, fraction=fr, seed=2020)
+    # Join the positive and the sampled negative dataframes
+    balanced_df = new_df1.union(df0)
+    return balanced_df
+
 def evaluate_model(predictions, file):
     """Evaluates a model by using its predictions in order to get
         the area under the curve ROC, accuracy, Kappa coefficient and the values of
         the confusion matrix. All this data will be stored in a csv file."""
     # ROC
-    #evaluator = BinaryClassificationEvaluator()
-    #roc = round(evaluator.evaluate(predictions)*100, 3)
-    roc = 0
+    evaluator = BinaryClassificationEvaluator()
+    roc = round(evaluator.evaluate(predictions)*100, 3)
     
     # Confusion matrix
     """Creates (prediction, label) pairs in order to use MulticlassMetrics"""
@@ -146,7 +155,6 @@ def binomial_logistic_regression(train, test, iters, regularization):
         maxIter=iters, regParam=best_lambda, elasticNetParam=regularization)
     lr_model = lr.fit(train)
     """Summary of the model and predictions"""
-    #summary = lr_model.summary
     predictions = lr_model.transform(test)
     
     return predictions
@@ -187,15 +195,6 @@ def random_forest(train, test, imp, depth, n_trees):
     predictions = rf_model.transform(test)
     return predictions
 
-def multilayer_perceptron(train, test, iters, layers):
-    """Multilayer perceptron based on a feedforward neural network in which the
-        number of iterations can be specified as well as the layers. The first layer
-        has the number of features and the last the number of classes."""
-    nn = MultilayerPerceptronClassifier(maxIter=iters, layers=layers, seed=2020)
-    nn_model = nn.fit(train)
-    predictions = nn_model.transform(test)
-    return predictions
-
 if __name__ == "__main__":
     my_df = is_df("./filteredC.small.training")
     # Balanced classes
@@ -207,30 +206,26 @@ if __name__ == "__main__":
     scaled_df = scale_features(preproc_df)
     """Get the train (70%) and test (30%) dataset"""
     train, test = scaled_df.randomSplit([0.7, 0.3], seed = 2020)
-    balanced_train = under_sampling(train)
-    #balanced_classes(balanced_train, './traindf.balanced.classes')
+    #train_under = under_sampling(train)
+    train_over = over_sampling(train)
+    balanced_classes(train_over, './train.over')
     
     """Binomial Logistic Regression models"""
-    #preds_ridge = binomial_logistic_regression(balanced_train, test, 10000, 0.0)
-    #evaluate_model(preds_ridge, 'blg.ridge')
-    #preds_lasso = binomial_logistic_regression(balanced_train, test, 10000, 1.0)
-    #evaluate_model(preds_lasso, 'blg.lasso')
+    preds_ridge = binomial_logistic_regression(train_over, test, 10000, 0.0)
+    evaluate_model(preds_ridge, 'blg.ridge')
+    preds_lasso = binomial_logistic_regression(train_over, test, 10000, 1.0)
+    evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    #preds_nb = naive_bayes(balanced_train, test)
+    #preds_nb = naive_bayes(train_over, test)
     #evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
-    #preds_dt_gini = decision_tree(balanced_train, test, 'gini', 15)
+    #preds_dt_gini = decision_tree(train_over, test, 'gini', 15)
     #evaluate_model(preds_dt_gini, 'decision.tree.gini')
-    #preds_dt_entropy = decision_tree(balanced_train, test, 'entropy', 15)
+    #preds_dt_entropy = decision_tree(train_over, test, 'entropy', 15)
     #evaluate_model(preds_dt_entropy, 'decision.tree.entropy')
     
     """Random Forest models"""
-   # preds_rf = random_forest(balanced_train, test, 'entropy', 15, 20)
+   # preds_rf = random_forest(train_over, test, 'entropy', 15, 20)
     #evaluate_model(preds_rf, 'random.forest')
-    
-    """Multilayer Perceptron models"""
-    layers = [6, 128, 64, 2]
-    preds_nn = multilayer_perceptron(train, test, 100, layers)
-    evaluate_model(preds_nn, 'nn.perceptron')
