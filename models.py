@@ -211,14 +211,14 @@ if __name__ == "__main__":
     balanced_classes(train_over, './train.over')
     
     """Binomial Logistic Regression models"""
-    preds_ridge = binomial_logistic_regression(train_over, test, 10000, 0.0)
-    evaluate_model(preds_ridge, 'blg.ridge')
-    preds_lasso = binomial_logistic_regression(train_over, test, 10000, 1.0)
-    evaluate_model(preds_lasso, 'blg.lasso')
+    #preds_ridge = binomial_logistic_regression(train_over, test, 10000, 0.0)
+    #evaluate_model(preds_ridge, 'blg.ridge')
+    #preds_lasso = binomial_logistic_regression(train_over, test, 10000, 1.0)
+    #evaluate_model(preds_lasso, 'blg.lasso')
     
     """Naive Bayes models"""
-    #preds_nb = naive_bayes(train_over, test)
-    #evaluate_model(preds_nb, 'naive.bayes.multinomial')
+    preds_nb = naive_bayes(train_over, test)
+    evaluate_model(preds_nb, 'naive.bayes.multinomial')
     
     """Decision Tree models"""
     #preds_dt_gini = decision_tree(train_over, test, 'gini', 15)
